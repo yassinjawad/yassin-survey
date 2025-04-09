@@ -1,59 +1,76 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import { v4 as uuidv4 } from 'uuid';
+import { db } from './db';
 
 function App() {
-  // surveys
   const [surveys, setSurveys] = useState([]);
   const [surveyName, setSurveyName] = useState('');
 
-  // respondents
   const [respondents, setRespondents] = useState([]);
   const [respondentFullName, setRespondentFullName] = useState('');
   const [respondentEmail, setRespondentEmail] = useState('');
 
-  // questions
   const [questions, setQuestions] = useState([]);
   const [questionText, setQuestionText] = useState('');
 
+  // Load data on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      setSurveys(await db.surveys.toArray());
+      setRespondents(await db.respondents.toArray());
+      setQuestions(await db.questions.toArray());
+    };
+    fetchData();
+  }, []);
+
   // Survey handlers
-  const handleAddSurvey = (e) => {
+  const handleAddSurvey = async (e) => {
     e.preventDefault();
     if (!surveyName.trim()) return;
-    setSurveys([...surveys, { id: uuidv4(), name: surveyName }]);
+    const newSurvey = { id: uuidv4(), name: surveyName };
+    await db.surveys.add(newSurvey);
+    setSurveys([...surveys, newSurvey]);
     setSurveyName('');
   };
 
-  const handleDeleteSurvey = (id) => {
+  const handleDeleteSurvey = async (id) => {
+    await db.surveys.where('id').equals(id).delete();
     setSurveys(surveys.filter(survey => survey.id !== id));
   };
 
   // Respondent handlers
-  const handleAddRespondent = (e) => {
+  const handleAddRespondent = async (e) => {
     e.preventDefault();
     if (!respondentFullName.trim() || !respondentEmail.trim()) return;
-    setRespondents([...respondents, { 
-      id: uuidv4(), 
+    const newRespondent = {
+      id: uuidv4(),
       fullName: respondentFullName,
       email: respondentEmail
-    }]);
+    };
+    await db.respondents.add(newRespondent);
+    setRespondents([...respondents, newRespondent]);
     setRespondentFullName('');
     setRespondentEmail('');
   };
 
-  const handleDeleteRespondent = (id) => {
+  const handleDeleteRespondent = async (id) => {
+    await db.respondents.where('id').equals(id).delete();
     setRespondents(respondents.filter(respondent => respondent.id !== id));
   };
 
   // Question handlers
-  const handleAddQuestion = (e) => {
+  const handleAddQuestion = async (e) => {
     e.preventDefault();
     if (!questionText.trim()) return;
-    setQuestions([...questions, { id: uuidv4(), text: questionText }]);
+    const newQuestion = { id: uuidv4(), text: questionText };
+    await db.questions.add(newQuestion);
+    setQuestions([...questions, newQuestion]);
     setQuestionText('');
   };
 
-  const handleDeleteQuestion = (id) => {
+  const handleDeleteQuestion = async (id) => {
+    await db.questions.where('id').equals(id).delete();
     setQuestions(questions.filter(question => question.id !== id));
   };
 
