@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db } from '../../data/db';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
@@ -6,21 +6,41 @@ import { Link } from 'react-router-dom';
 export default function RespondentCreate() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [surveys, setSurveys] = useState([]);
+  const [selectedSurveyId, setSelectedSurveyId] = useState('');
+
+  useEffect(() => {
+    const fetchSurveys = async () => {
+      const all = await db.surveys.toArray();
+      setSurveys(all);
+    };
+    fetchSurveys();
+  }, []);
 
   const handleCreate = async () => {
-    if (!name.trim() || !email.trim()) {
-      toast.error('Both name and email are required!');
+    if (!name.trim() || !email.trim() || !selectedSurveyId) {
+      toast.error('Please enter all fields and select a survey!');
       return;
     }
 
     try {
-      await db.respondents.add({ name: name.trim(), email: email.trim() });
-      toast.success('Respondent added!');
+      const respondentId = await db.respondents.add({
+        name: name.trim(),
+        email: email.trim(),
+      });
+
+      await db.survey_respondents.add({
+        surveyId: Number(selectedSurveyId),
+        respondentId,
+      });
+
+      toast.success('Respondent added and linked!');
       setName('');
       setEmail('');
+      setSelectedSurveyId('');
     } catch (error) {
-      console.error('Error adding respondent:', error);
-      toast.error('Failed to create respondent.');
+      console.error('Error:', error);
+      toast.error('Something went wrong.');
     }
   };
 
@@ -45,6 +65,17 @@ export default function RespondentCreate() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
+
+        <select
+          value={selectedSurveyId}
+          onChange={(e) => setSelectedSurveyId(e.target.value)}
+        >
+          <option value="">Select survey</option>
+          {surveys.map((s) => (
+            <option key={s.id} value={s.id}>{s.name}</option>
+          ))}
+        </select>
+
         <button onClick={handleCreate}>Add</button>
       </div>
     </div>

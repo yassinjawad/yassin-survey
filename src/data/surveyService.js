@@ -1,22 +1,40 @@
 // src/data/surveyService.js
 import { db } from './db';
 
-export async function linkRespondentToSurvey(surveyId, respondentId) {
-  await db.surveyRespondents.add({ surveyId, respondentId });
-}
+// ✅ Link a respondent to a survey
+export const linkRespondentToSurvey = async (surveyId, respondentId) => {
+  if (!surveyId || !respondentId) return;
+  await db.table('survey_respondents').add({ surveyId, respondentId });
+};
 
-export async function linkQuestionToSurvey(surveyId, questionId) {
-  await db.surveyQuestions.add({ surveyId, questionId });
-}
+// ✅ Link a question to a survey
+export const linkQuestionToSurvey = async (surveyId, questionId) => {
+  if (!surveyId || !questionId) return;
+  await db.table('survey_questions').add({ surveyId, questionId });
+};
 
-export async function getRespondentsBySurvey(surveyId) {
-  const links = await db.surveyRespondents.where({ surveyId }).toArray();
-  const ids = links.map(link => link.respondentId);
-  return await db.respondents.bulkGet(ids);
-}
+// ✅ Get respondents linked to a survey
+export const getRespondentsBySurvey = async (surveyId) => {
+  if (!surveyId || !db.table('survey_respondents')) return [];
 
-export async function getQuestionsBySurvey(surveyId) {
-  const links = await db.surveyQuestions.where({ surveyId }).toArray();
-  const ids = links.map(link => link.questionId);
-  return await db.questions.bulkGet(ids);
-}
+  const links = await db.table('survey_respondents')
+    .where('surveyId')
+    .equals(surveyId)
+    .toArray();
+
+  const respondentIds = links.map(link => link.respondentId);
+  return await db.respondents.where('id').anyOf(respondentIds).toArray();
+};
+
+// ✅ Get questions linked to a survey
+export const getQuestionsBySurvey = async (surveyId) => {
+  if (!surveyId || !db.table('survey_questions')) return [];
+
+  const links = await db.table('survey_questions')
+    .where('surveyId')
+    .equals(surveyId)
+    .toArray();
+
+  const questionIds = links.map(link => link.questionId);
+  return await db.questions.where('id').anyOf(questionIds).toArray();
+};

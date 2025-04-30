@@ -3,13 +3,12 @@ import { db } from '../../data/db';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import ConfirmDialog from '../Common/ConfirmDialog';
-import './SurveyList.css';
+import './SurveyList.css'; // Optional if styles are in App.css
 
 export default function SurveyList() {
   const [surveys, setSurveys] = useState([]);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [confirmTarget, setConfirmTarget] = useState(null);
-  const [confirmId, setConfirmId] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
 
   useEffect(() => {
     const fetchSurveys = async () => {
@@ -19,28 +18,27 @@ export default function SurveyList() {
     fetchSurveys();
   }, []);
 
-  const handleDeleteClick = (target, id) => {
-    setConfirmTarget(target);
-    setConfirmId(id);
+  const handleDelete = async (id) => {
+    await db.surveys.delete(id);
+    toast.success('Survey deleted!');
+    const updated = await db.surveys.toArray();
+    setSurveys(updated);
+  };
+
+  const handleDeleteClick = (id) => {
+    setSelectedId(id);
     setShowConfirm(true);
   };
 
-  const handleConfirmDelete = async () => {
-    if (confirmTarget === 'survey') {
-      await db.surveys.delete(confirmId);
-      toast.success('Survey deleted!');
-      const updated = await db.surveys.toArray();
-      setSurveys(updated);
-    }
+  const handleConfirmDelete = () => {
+    if (selectedId) handleDelete(selectedId);
     setShowConfirm(false);
-    setConfirmTarget(null);
-    setConfirmId(null);
+    setSelectedId(null);
   };
 
-  const handleCancelDelete = () => {
+  const handleCancel = () => {
     setShowConfirm(false);
-    setConfirmTarget(null);
-    setConfirmId(null);
+    setSelectedId(null);
   };
 
   return (
@@ -52,7 +50,7 @@ export default function SurveyList() {
       <h2>All Surveys</h2>
 
       {surveys.length === 0 ? (
-        <p>No surveys found. Create one from the navbar above.</p>
+        <p>No surveys found. Create one using the navigation above.</p>
       ) : (
         <ul className="survey-list">
           {surveys.map((survey) => (
@@ -62,7 +60,7 @@ export default function SurveyList() {
               </Link>
               <button
                 className="delete-btn"
-                onClick={() => handleDeleteClick('survey', survey.id)}
+                onClick={() => handleDeleteClick(survey.id)}
               >
                 Delete
               </button>
@@ -73,9 +71,9 @@ export default function SurveyList() {
 
       {showConfirm && (
         <ConfirmDialog
-          message={`Are you sure you want to delete this ${confirmTarget}?`}
+          message="Are you sure you want to delete this survey?"
           onConfirm={handleConfirmDelete}
-          onCancel={handleCancelDelete}
+          onCancel={handleCancel}
         />
       )}
     </div>

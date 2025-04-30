@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { db } from '../../data/db';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
-//import './SurveyCreate.css'; // optional if you want a separate CSS, otherwise reuse styles
 
 export default function SurveyCreate() {
   const [surveyName, setSurveyName] = useState('');

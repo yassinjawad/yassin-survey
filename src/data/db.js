@@ -1,12 +1,11 @@
 import Dexie from 'dexie';
 
-export const db = new Dexie('SurveyDatabase');
+export const db = new Dexie('YassinSurveyDB');
 
-// Define schema
 db.version(1).stores({
   surveys: '++id, name',
-  respondents: '++id, name',
   questions: '++id, text',
-  surveyRespondents: '++id, surveyId, respondentId',
-  surveyQuestions: '++id, surveyId, questionId',
+  respondents: '++id, name, email',
+  survey_questions: '++id, surveyId, questionId',
+  survey_respondents: '++id, surveyId, respondentId'
 });

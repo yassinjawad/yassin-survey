@@ -10,7 +10,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import SurveyList from './components/Survey/SurveyList';
 import SurveyDetailsWrapper from './components/Survey/SurveyDetailsWrapper';
 import './App.css';
-
+import SurveyDetails from './components/Survey/SurveyDetails';
 
 function App() {
   return (
@@ -25,6 +25,7 @@ function App() {
           <Route path="/create-question" element={<QuestionCreate />} />
           <Route path="/surveys" element={<SurveyList />} />
           <Route path="/survey/:id" element={<SurveyDetailsWrapper />} />
+          <Route path="/survey/:id" element={<SurveyDetails />} />
 
         </Routes>
       </div>
