@@ -1,3 +1,5 @@
+// src/components/Survey/SurveyDetails.js
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { db } from '../../data/db';
 import {
@@ -6,6 +8,10 @@ import {
   getRespondentsBySurvey,
   getQuestionsBySurvey
 } from '../../data/surveyService';
+import { toast } from 'react-toastify';
+import { Link } from 'react-router-dom';
+import ConfirmDialog from '../Common/ConfirmDialog';
+import './SurveyDetails.css'; // 👈 import the styling
 
 export default function SurveyDetails({ survey }) {
   const [respondents, setRespondents] = useState([]);
@@ -15,7 +21,10 @@ export default function SurveyDetails({ survey }) {
   const [selectedRespondentId, setSelectedRespondentId] = useState(null);
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);
 
-  // Moved fetchInitialData outside, wrapped with useCallback
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [confirmTarget, setConfirmTarget] = useState(null);
+  const [confirmId, setConfirmId] = useState(null);
+
   const fetchInitialData = useCallback(async () => {
     const allRespondents = await db.respondents.toArray();
     const allQuestions = await db.questions.toArray();
@@ -35,62 +44,113 @@ export default function SurveyDetails({ survey }) {
   const handleLinkRespondent = async () => {
     if (!selectedRespondentId) return;
     await linkRespondentToSurvey(survey.id, Number(selectedRespondentId));
+    toast.success('Respondent linked!');
     await fetchInitialData();
   };
 
   const handleLinkQuestion = async () => {
     if (!selectedQuestionId) return;
     await linkQuestionToSurvey(survey.id, Number(selectedQuestionId));
+    toast.success('Question linked!');
     await fetchInitialData();
   };
 
+  const handleDeleteClick = (target, id) => {
+    setConfirmTarget(target);
+    setConfirmId(id);
+    setShowConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (confirmTarget === 'respondent') {
+      await db.respondents.delete(confirmId);
+      toast.success('Respondent deleted!');
+    } else if (confirmTarget === 'question') {
+      await db.questions.delete(confirmId);
+      toast.success('Question deleted!');
+    }
+    setShowConfirm(false);
+    await fetchInitialData();
+  };
+
+  const handleCancelDelete = () => {
+    setShowConfirm(false);
+    setConfirmTarget(null);
+    setConfirmId(null);
+  };
+
   return (
-    <div style={{ padding: '1rem' }}>
-      <h2>Survey: {survey.name}</h2>
+    <div className="survey-details">
+      <Link to="/surveys">
+        <button className="back-button">← Back to Surveys</button>
+      </Link>
 
-      {/* Link Respondent */}
-      <div>
+      <h2>{survey.name}</h2>
+
+      <div className="section">
         <h3>Link a Respondent</h3>
-        <select onChange={e => setSelectedRespondentId(e.target.value)} defaultValue="">
-          <option value="" disabled>Select respondent</option>
-          {respondents.map(r => (
-            <option key={r.id} value={r.id}>{r.name}</option>
-          ))}
-        </select>
-        <button onClick={handleLinkRespondent}>Add</button>
+        <div className="input-group">
+          <select onChange={e => setSelectedRespondentId(e.target.value)} defaultValue="">
+            <option value="" disabled>Select respondent</option>
+            {respondents.map(r => (
+  <option key={r.id} value={r.id}>
+    {r.name}{r.email ? ` (${r.email})` : ''}
+  </option>
+))}
+          </select>
+          <button onClick={handleLinkRespondent}>Link</button>
+        </div>
       </div>
 
-      {/* Link Question */}
-      <div>
+      <div className="section">
         <h3>Link a Question</h3>
-        <select onChange={e => setSelectedQuestionId(e.target.value)} defaultValue="">
-          <option value="" disabled>Select question</option>
-          {questions.map(q => (
-            <option key={q.id} value={q.id}>{q.text}</option>
-          ))}
-        </select>
-        <button onClick={handleLinkQuestion}>Add</button>
+        <div className="input-group">
+          <select onChange={e => setSelectedQuestionId(e.target.value)} defaultValue="">
+            <option value="" disabled>Select question</option>
+            {questions.map(q => (
+              <option key={q.id} value={q.id}>{q.text}</option>
+            ))}
+          </select>
+          <button onClick={handleLinkQuestion}>Link</button>
+        </div>
       </div>
 
-      {/* Linked Respondents */}
-      <div>
+      <div className="section">
         <h3>Respondents in this Survey</h3>
         <ul>
-          {linkedRespondents.map(r => (
-            <li key={r.id}>{r.name}</li>
-          ))}
+        {linkedRespondents.map((r, i) =>
+  r ? (
+    <li key={r.id || i}>
+      {r.name}{r.email ? ` (${r.email})` : ''}
+      <button className="delete-btn" onClick={() => handleDeleteClick('respondent', r.id)}>Delete</button>
+    </li>
+  ) : null
+)}
+
         </ul>
       </div>
 
-      {/* Linked Questions */}
-      <div>
+      <div className="section">
         <h3>Questions in this Survey</h3>
         <ul>
-          {linkedQuestions.map(q => (
-            <li key={q.id}>{q.text}</li>
-          ))}
+          {linkedQuestions.map((q, i) =>
+            q ? (
+              <li key={q.id || i}>
+                {q.text}
+                <button className="delete-btn" onClick={() => handleDeleteClick('question', q.id)}>Delete</button>
+              </li>
+            ) : null
+          )}
         </ul>
       </div>
+
+      {showConfirm && (
+        <ConfirmDialog
+          message={`Are you sure you want to delete this ${confirmTarget}?`}
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+        />
+      )}
     </div>
   );
 }

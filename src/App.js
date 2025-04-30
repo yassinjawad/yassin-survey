@@ -1,48 +1,35 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar/Navbar';
 import SurveyCreate from './components/Survey/SurveyCreate';
-import SurveyDetails from './components/Survey/SurveyDetails';
 import RespondentCreate from './components/Respondent/RespondentCreate';
 import QuestionCreate from './components/Question/QuestionCreate';
+import HomePage from './components/HomePage/HomePage';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import SurveyList from './components/Survey/SurveyList';
+import SurveyDetailsWrapper from './components/Survey/SurveyDetailsWrapper';
 import './App.css';
 
-// Dummy data to simulate survey selection (you can replace it with real data from your database)
-const mockSurveys = [
-  { id: 1, name: 'Survey 1' },
-  { id: 2, name: 'Survey 2' },
-];
 
-export default function App() {
-  const [selectedSurvey, setSelectedSurvey] = useState(null);
-
-  const handleSurveySelect = (survey) => {
-    setSelectedSurvey(survey);
-  };
-
+function App() {
   return (
-    <div style={{ padding: '2rem' }}>
-      <h1>Yassin's Survey</h1>
+    <Router>
+      <Navbar />
+      <ToastContainer /> {/* Make sure this exists */}
+      <div style={{ padding: '2rem' }}>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/create-survey" element={<SurveyCreate />} />
+          <Route path="/create-respondent" element={<RespondentCreate />} />
+          <Route path="/create-question" element={<QuestionCreate />} />
+          <Route path="/surveys" element={<SurveyList />} />
+          <Route path="/survey/:id" element={<SurveyDetailsWrapper />} />
 
-      {/* Create Survey */}
-      <SurveyCreate />
-
-      {/* Create Respondent */}
-      <RespondentCreate />
-
-      {/* Create Question */}
-      <QuestionCreate />
-
-      {/* Survey List */}
-      <div>
-        <h2>Choose a Survey to View Details</h2>
-        {mockSurveys.map(survey => (
-          <button key={survey.id} onClick={() => handleSurveySelect(survey)}>
-            {survey.name}
-          </button>
-        ))}
+        </Routes>
       </div>
-
-      {/* Survey Details */}
-      {selectedSurvey && <SurveyDetails survey={selectedSurvey} />}
-    </div>
+    </Router>
   );
 }
+
+export default App;
