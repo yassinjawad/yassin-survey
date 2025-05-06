@@ -1,83 +1,97 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../data/db';
 import { toast } from 'react-toastify';
-import { Link } from 'react-router-dom';
+import Navbar from '../Navbar/Navbar';
 
 export default function RespondentCreate() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [surveys, setSurveys] = useState([]);
-  const [selectedSurveyId, setSelectedSurveyId] = useState('');
+  const [respondents, setRespondents] = useState([]);
 
   useEffect(() => {
-    const fetchSurveys = async () => {
-      const all = await db.surveys.toArray();
-      setSurveys(all);
+    const fetchRespondents = async () => {
+      const all = await db.respondents.toArray();
+      setRespondents(all);
     };
-    fetchSurveys();
+
+    fetchRespondents();
   }, []);
 
   const handleCreate = async () => {
-    if (!name.trim() || !email.trim() || !selectedSurveyId) {
-      toast.error('Please enter all fields and select a survey!');
+    if (!name.trim() || !email.trim()) {
+      toast.error("Please enter full name and email.");
       return;
     }
 
-    try {
-      const respondentId = await db.respondents.add({
-        name: name.trim(),
-        email: email.trim(),
-      });
+    await db.respondents.add({ name, email });
+    toast.success("Respondent added!");
+    setName('');
+    setEmail('');
 
-      await db.survey_respondents.add({
-        surveyId: Number(selectedSurveyId),
-        respondentId,
-      });
+    const updated = await db.respondents.toArray();
+    setRespondents(updated);
+  };
 
-      toast.success('Respondent added and linked!');
-      setName('');
-      setEmail('');
-      setSelectedSurveyId('');
-    } catch (error) {
-      console.error('Error:', error);
-      toast.error('Something went wrong.');
+  const handleDeleteRespondent = async (id) => {
+    if (window.confirm("Are you sure you want to delete this respondent?")) {
+      await db.respondents.delete(id);
+      toast.success("Respondent deleted!");
+      const updated = await db.respondents.toArray();
+      setRespondents(updated);
     }
   };
 
   return (
     <div className="page-container">
-      <Link to="/">
-        <button className="back-button">← Home</button>
-      </Link>
+      <Navbar />
 
-      <h2>Add a New Respondent</h2>
+      <h2>Add Respondent</h2>
 
-      <div className="form-group">
-        <input
-          type="text"
-          placeholder="Full name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <input
-          type="email"
-          placeholder="Email address"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+      <input
+        type="text"
+        placeholder="Full Name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
 
-        <select
-          value={selectedSurveyId}
-          onChange={(e) => setSelectedSurveyId(e.target.value)}
-        >
-          <option value="">Select survey</option>
-          {surveys.map((s) => (
-            <option key={s.id} value={s.id}>{s.name}</option>
-          ))}
-        </select>
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
 
-        <button onClick={handleCreate}>Add</button>
-      </div>
+      <button onClick={handleCreate}>Add Respondent</button>
+
+      <section style={{ marginTop: '2rem' }}>
+        <h3>Existing Respondents</h3>
+
+        {respondents.length === 0 ? (
+          <p>No respondents yet.</p>
+        ) : (
+          <ul>
+            {respondents.map((r) => (
+              <li key={r.id} style={{ marginBottom: '0.5rem' }}>
+                {r.name} ({r.email})
+                <button
+                  onClick={() => handleDeleteRespondent(r.id)}
+                  style={{
+                    marginLeft: '1rem',
+                    backgroundColor: '#dc3545',
+                    color: 'white',
+                    border: 'none',
+                    padding: '0.3rem 0.6rem',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🗑️
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }

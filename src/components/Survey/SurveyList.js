@@ -3,7 +3,8 @@ import { db } from '../../data/db';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import ConfirmDialog from '../Common/ConfirmDialog';
-import './SurveyList.css'; // Optional if styles are in App.css
+import './SurveyList.css';
+import Navbar from '../Navbar/Navbar';
 
 export default function SurveyList() {
   const [surveys, setSurveys] = useState([]);
@@ -43,11 +44,9 @@ export default function SurveyList() {
 
   return (
     <div className="page-container">
-      <Link to="/">
-        <button className="back-button">← Home</button>
-      </Link>
+      <Navbar />
 
-      <h2>All Surveys</h2>
+      <h2>Set Up Surveys</h2>
 
       {surveys.length === 0 ? (
         <p>No surveys found. Create one using the navigation above.</p>
@@ -55,14 +54,14 @@ export default function SurveyList() {
         <ul className="survey-list">
           {surveys.map((survey) => (
             <li key={survey.id} className="survey-item">
-              <Link to={`/survey/${survey.id}`} className="survey-link">
+              <Link to={`/survey/${survey.id}/setup`} className="survey-link">
                 {survey.name}
               </Link>
               <button
                 className="delete-btn"
                 onClick={() => handleDeleteClick(survey.id)}
               >
-                Delete
+                ❌
               </button>
             </li>
           ))}

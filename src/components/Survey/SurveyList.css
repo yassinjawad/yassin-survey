@@ -1,50 +1,39 @@
-.page-container {
-    max-width: 800px;
-    margin: auto;
-    padding: 2rem;
-    background: #f9f9f9;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    font-family: 'Segoe UI', sans-serif;
-  }
-  
-  .back-button {
-    margin-bottom: 1rem;
-    padding: 0.5rem 1rem;
-    background: #eee;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .survey-list {
-    list-style: none;
-    padding: 0;
-  }
-  
-  .survey-item {
-    background: #fff;
-    padding: 0.75rem 1rem;
-    margin-bottom: 0.6rem;
-    border-radius: 6px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: 1px solid #ddd;
-  }
-  
-  .survey-link {
-    text-decoration: none;
-    font-size: 1.1rem;
-    color: #007bff;
-  }
-  
-  .delete-btn {
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    padding: 0.4rem 0.8rem;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-  
+.survey-list {
+  list-style: none;
+  padding: 0;
+}
+
+.survey-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.6rem;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.survey-link {
+  font-weight: bold;
+  text-decoration: none;
+  color: #007bff;
+}
+
+.survey-link:hover {
+  text-decoration: underline;
+}
+
+.delete-btn {
+  background-color: transparent;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background-color: #afafaf;
+}
+

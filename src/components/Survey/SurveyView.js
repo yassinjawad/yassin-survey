@@ -1,25 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { db } from '../../data/db';
-import {
-  getRespondentsBySurvey,
-  getQuestionsBySurvey
-} from '../../data/surveyService';
-import './SurveyDetails.css';
+import { getRespondentsBySurvey, getQuestionsBySurvey } from '../../data/surveyService';
+import '../../App.css';
+import Navbar from '../Navbar/Navbar';
 
-export default function SurveyDetails() {
+export default function SurveyView() {
   const { id } = useParams();
   const surveyId = Number(id);
 
-  const [survey, setSurvey] = useState(null);
+  const [survey, setSurvey] = useState(undefined);
   const [linkedRespondents, setLinkedRespondents] = useState([]);
   const [linkedQuestions, setLinkedQuestions] = useState([]);
 
   useEffect(() => {
     const fetchSurveyData = async () => {
       const foundSurvey = await db.surveys.get(surveyId);
+      setSurvey(foundSurvey ?? null);
+
       if (foundSurvey) {
-        setSurvey(foundSurvey);
         const respondents = await getRespondentsBySurvey(surveyId);
         const questions = await getQuestionsBySurvey(surveyId);
         setLinkedRespondents(respondents);
@@ -30,20 +29,21 @@ export default function SurveyDetails() {
     fetchSurveyData();
   }, [surveyId]);
 
-  if (!survey) return <p>Loading survey...</p>;
+  if (survey === undefined) return <p>Loading survey...</p>;
+  if (!survey) return (
+    <div className="page-container">
+      <h2>Survey not found.</h2>
+      <Link to="/view-surveys">
+        <button className="back-button">← Back to View Surveys</button>
+      </Link>
+    </div>
+  );
 
   return (
     <div className="page-container">
-      <div className="nav-buttons">
-  <Link to="/">
-    <button className="back-button">← Home</button>
-  </Link>
-  <Link to="/surveys">
-    <button className="back-button">← All Surveys</button>
-  </Link>
-</div>
-
-      <h2>Survey: {survey.name}</h2>
+        <Navbar />
+      
+      {survey && <h2>Survey: {survey.name}</h2>}
 
       <section>
         <h3>Respondents</h3>
